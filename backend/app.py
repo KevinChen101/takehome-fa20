@@ -66,12 +66,21 @@ def get_all_restaurants():
       return create_response(status=404, message="No restaurants are found with this rating or above")
     return create_response({"restaurants": filtered_restaurants})
 
+@app.route("/restaurants", methods=['POST'])
+def create_restaurant():
+  new_restaurant_data = request.get_json()
+  if new_restaurant_data["name"] is None:
+    return create_response(status=422, message="Restraunt name not provided")
+  elif new_restaurant_data["rating"] is None:
+    return create_response(status=422, message="Restraunt rating not provided")
+  new_restaurant = db.create('restaurants', new_restaurant_data)
+  return create_response(status=201, data=new_restaurant)
+
 @app.route("/restaurants/<id>", methods = ['GET'])
 def get_restaurant(id):
   if db.getById('restaurants', int(id)) is None:
     return create_response(status=404, message="No restaurant with this id exists")
-  return create_response({"restaurant": db.getById('restaurants', int(id))})
-
+  return create_response(db.getById('restaurants', int(id)))
 
 @app.route("/restaurants/<id>", methods=['DELETE'])
 def delete_restaurant(id):
