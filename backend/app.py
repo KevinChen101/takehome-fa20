@@ -52,12 +52,24 @@ def mirror(name):
 
 @app.route("/restaurants", methods=['GET'])
 def get_all_restaurants():
-    return create_response({"restaurants": db.get('restaurants')})
+    minRating = request.args.get('minRating')
+    if minRating is None:
+      return create_response({"restaurants": db.get('restaurants')})
+
+    minRating = int(minRating)
+    filtered_restaurants = []
+    for check_restaurant in db.get('restaurants'):
+      if check_restaurant["rating"] >= minRating:
+        filtered_restaurants.append(check_restaurant)
+    
+    if not filtered_restaurants:
+      return create_response(status=404, message="No restaurants are found with this rating or above")
+    return create_response({"restaurants": filtered_restaurants})
 
 @app.route("/restaurants/<id>", methods = ['GET'])
 def get_restaurant(id):
   if db.getById('restaurants', int(id)) is None:
-    return create_response(status=404, message="No restaurant with this id exists, please try again")
+    return create_response(status=404, message="No restaurant with this id exists")
   return create_response({"restaurant": db.getById('restaurants', int(id))})
 
 
